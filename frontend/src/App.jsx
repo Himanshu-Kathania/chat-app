@@ -6,17 +6,16 @@ import { LoginPage } from "./Pages/LoginPage";
 import { SettingsPage } from "./Pages/SettingsPage";
 import { ProfilePage } from "./Pages/ProfilePage";
 import { useAuthStore } from "./store/useAuthStore";
+import { useThemeStore } from "./store/useThemeStore";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
-
+  const { theme } = useThemeStore();
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-
-  console.log(authUser);
 
   if (isCheckingAuth && !authUser)
     return (
@@ -25,7 +24,7 @@ const App = () => {
       </div>
     );
   return (
-    <div className="">
+    <div data-theme={theme}>
       <Navbar />
 
       <Routes>

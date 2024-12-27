@@ -35,7 +35,7 @@ export const useChatStore = create((set, get) => ({
   },
 
   sendMessage: async (messageData) => {
-    const { selectedUser } = get();
+    const { selectedUser, messages } = get();
     if (!selectedUser) {
       toast.error("No user selected");
       return;
@@ -47,7 +47,10 @@ export const useChatStore = create((set, get) => ({
       );
       const newMessage = res.data;
 
-      // Only emit to socket
+      // Update messages immediately for sender
+      set({ messages: [...messages, newMessage] });
+
+      // Emit to socket for receiver
       const socket = useAuthStore.getState().socket;
       socket.emit("newMessage", {
         ...newMessage,
@@ -66,12 +69,8 @@ export const useChatStore = create((set, get) => ({
 
     socket.on("newMessage", (newMessage) => {
       const { messages, selectedUser } = get();
-      // Add messages only through socket
-      if (
-        selectedUser &&
-        (newMessage.senderId === selectedUser._id ||
-          newMessage.receiverId === selectedUser._id)
-      ) {
+      // Only update if message is from current chat partner
+      if (selectedUser && newMessage.senderId === selectedUser._id) {
         set({ messages: [...messages, newMessage] });
       }
     });

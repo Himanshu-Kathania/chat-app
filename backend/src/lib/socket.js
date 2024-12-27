@@ -41,7 +41,12 @@ io.on("connection", (socket) => {
   socket.on("newMessage", (message) => {
     const receiverSocketId = getReceiverSocketId(message.receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", message);
+      // Add timestamp if not present
+      const messageWithTimestamp = {
+        ...message,
+        createdAt: message.createdAt || new Date().toISOString(), // Ye important line thi
+      };
+      io.to(receiverSocketId).emit("newMessage", messageWithTimestamp);
     }
   });
 

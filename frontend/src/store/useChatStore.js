@@ -76,7 +76,11 @@ export const useChatStore = create((set, get) => ({
             (msg) => msg._id === newMessage._id
           );
           if (!exists) {
-            return { messages: [...state.messages, newMessage] };
+            const messageWithTimestamp = {
+              ...newMessage,
+              createdAt: newMessage.createdAt || new Date().toISOString(),
+            };
+            return { messages: [...state.messages, messageWithTimestamp] };
           }
           return state;
         });

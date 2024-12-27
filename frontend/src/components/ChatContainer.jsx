@@ -20,17 +20,13 @@ export const ChatContainer = () => {
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
-
-    subscribeToMessages();
+    if (selectedUser) {
+      getMessages(selectedUser._id);
+      subscribeToMessages();
+    }
 
     return () => unsubscribeFromMessages();
-  }, [
-    selectedUser._id,
-    getMessages,
-    subscribeToMessages,
-    unsubscribeFromMessages,
-  ]);
+  }, [selectedUser, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -61,6 +57,7 @@ export const ChatContainer = () => {
             }`}
             ref={index === messages.length - 1 ? messageEndRef : null}
           >
+            {console.log({ message })}
             <div className=" chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img

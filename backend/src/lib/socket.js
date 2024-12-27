@@ -40,10 +40,7 @@ io.on("connection", (socket) => {
 
   socket.on("newMessage", (message) => {
     const receiverSocketId = getReceiverSocketId(message.receiverId);
-    const senderSocketId = getReceiverSocketId(message.senderId);
-
-    // Send only to receiver, not back to sender
-    if (receiverSocketId && receiverSocketId !== senderSocketId) {
+    if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", message);
     }
   });

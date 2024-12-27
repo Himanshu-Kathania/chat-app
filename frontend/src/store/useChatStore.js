@@ -36,10 +36,6 @@ export const useChatStore = create((set, get) => ({
 
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
-    if (!selectedUser) {
-      toast.error("No user selected");
-      return;
-    }
     try {
       const res = await axiosInstance.post(
         `/messages/send/${selectedUser._id}`,
@@ -47,31 +43,43 @@ export const useChatStore = create((set, get) => ({
       );
       const newMessage = res.data;
 
-      // Update messages immediately for sender
-      set({ messages: [...messages, newMessage] });
+      const authUser = useAuthStore.getState().authUser;
+      if (authUser._id === newMessage.senderId) {
+        set({ messages: [...messages, newMessage] });
+      }
 
-      // Emit to socket for receiver
       const socket = useAuthStore.getState().socket;
       socket.emit("newMessage", {
         ...newMessage,
         receiverId: selectedUser._id,
       });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send message");
+      toast.error(error.response.data.message);
     }
   },
 
   subscribeToMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    if (!socket) return;
+    const { selectedUser } = get();
+    if (!selectedUser) return;
 
+    const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
 
     socket.on("newMessage", (newMessage) => {
-      const { messages, selectedUser } = get();
-      // Only update if message is from current chat partner
-      if (selectedUser && newMessage.senderId === selectedUser._id) {
-        set({ messages: [...messages, newMessage] });
+      const authUser = useAuthStore.getState().authUser;
+      if (
+        newMessage.senderId === selectedUser._id &&
+        newMessage.receiverId === authUser._id
+      ) {
+        set((state) => {
+          const exists = state.messages.some(
+            (msg) => msg._id === newMessage._id
+          );
+          if (!exists) {
+            return { messages: [...state.messages, newMessage] };
+          }
+          return state;
+        });
       }
     });
   },

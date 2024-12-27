@@ -38,6 +38,13 @@ io.on("connection", (socket) => {
 
   emitOnlineUsers();
 
+  socket.on("newMessage", (message) => {
+    const receiverSocketId = getReceiverSocketId(message.receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", message);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);
 
